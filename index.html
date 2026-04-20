@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>SYSTEM BREACHED</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: 'Courier New', Courier, monospace;
+    color: #00ff41;
+  }
+
+  /* Matrix canvas background */
+  #matrix {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  /* Dark radial gradient overlay */
+  .gradient-overlay {
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 70%, #000 100%),
+      linear-gradient(135deg, rgba(255,0,60,0.08) 0%, rgba(0,255,65,0.05) 50%, rgba(0,180,255,0.08) 100%);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* CRT scanlines */
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0.15) 0px,
+      rgba(0,0,0,0.15) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    z-index: 3;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+  }
+
+  /* Vignette flicker */
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    92% { opacity: 1; }
+    93% { opacity: 0.7; }
+    94% { opacity: 1; }
+    96% { opacity: 0.85; }
+    97% { opacity: 1; }
+  }
+
+  .content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+    animation: flicker 6s infinite;
+  }
+
+  /* Top HUD bar */
+  .hud-top {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 11;
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 18px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #00ff41;
+    text-shadow: 0 0 8px #00ff41;
+    border-bottom: 1px solid rgba(0,255,65,0.3);
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  .hud-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 11;
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 18px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #ff003c;
+    text-shadow: 0 0 8px #ff003c;
+    border-top: 1px solid rgba(255,0,60,0.3);
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  .blink { animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: 0.3; } }
+
+  /* Warning icon */
+  .skull {
+    font-size: 60px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 20px #ff003c) drop-shadow(0 0 40px #ff003c);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  .alert {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #ff003c;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px #ff003c;
+  }
+
+  h1 {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: clamp(28px, 8vw, 56px);
+    font-weight: 900;
+    letter-spacing: 2px;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    color: #fff;
+    text-shadow:
+      0 0 10px #00ff41,
+      0 0 20px #00ff41,
+      0 0 40px rgba(0,255,65,0.5);
+    position: relative;
+  }
+
+  h1 .mati {
+    background: linear-gradient(90deg, #00ff41, #00b4ff, #ff003c);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: hueshift 3s infinite;
+    text-shadow: none;
+  }
+
+  @keyframes hueshift {
+    0%, 100% { filter: hue-rotate(0deg); }
+    50% { filter: hue-rotate(60deg); }
+  }
+
+  .subtitle {
+    font-size: clamp(18px, 5vw, 30px);
+    font-weight: bold;
+    color: #ff003c;
+    text-shadow:
+      0 0 10px #ff003c,
+      0 0 20px #ff003c,
+      2px 0 #00ffff,
+      -2px 0 #ff00ff;
+    animation: glitch 3s infinite;
+    margin-bottom: 30px;
+    letter-spacing: 3px;
+  }
+
+  @keyframes glitch {
+    0%, 90%, 100% { transform: translate(0); }
+    92% { transform: translate(-2px, 1px); }
+    94% { transform: translate(2px, -1px); }
+    96% { transform: translate(-1px, 2px); }
+    98% { transform: translate(1px, -2px); }
+  }
+
+  .terminal {
+    font-size: 11px;
+    color: #00ff41;
+    text-align: left;
+    max-width: 320px;
+    width: 100%;
+    background: rgba(0,20,0,0.5);
+    border: 1px solid rgba(0,255,65,0.4);
+    border-radius: 4px;
+    padding: 14px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 0 30px rgba(0,255,65,0.2), inset 0 0 20px rgba(0,255,65,0.05);
+    line-height: 1.7;
+  }
+
+  .terminal-line {
+    opacity: 0;
+    animation: typeIn 0.3s forwards;
+  }
+  .terminal-line:nth-child(1) { animation-delay: 0.5s; }
+  .terminal-line:nth-child(2) { animation-delay: 1.2s; }
+  .terminal-line:nth-child(3) { animation-delay: 1.9s; }
+  .terminal-line:nth-child(4) { animation-delay: 2.6s; color: #ff003c; text-shadow: 0 0 8px #ff003c;}
+  .terminal-line:nth-child(5) { animation-delay: 3.3s; color: #ffd700; }
+
+  @keyframes typeIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 12px;
+    background: #00ff41;
+    animation: blink 1s infinite;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+
+  /* Mobile tweaks */
+  @media (max-width: 400px) {
+    .skull { font-size: 48px; }
+    .hud-top, .hud-bottom { font-size: 9px; padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+<div class="gradient-overlay"></div>
+<div class="scanlines"></div>
+
+<div class="hud-top">
+  <span>SYS://ROOT</span>
+  <span class="blink">● REC</span>
+  <span id="time">00:00:00</span>
+</div>
+
+<div class="content">
+  <div class="skull">☠</div>
+  <div class="alert">⚠ SECURITY BREACH DETECTED ⚠</div>
+
+  <h1>YOU'VE BEEN HACKED<br>BY <span class="mati">MATI</span></h1>
+
+  <div class="subtitle">MOTHERFUCKER!</div>
+
+  <div class="terminal">
+    <div class="terminal-line">&gt; initializing intrusion...</div>
+    <div class="terminal-line">&gt; bypassing firewall... [OK]</div>
+    <div class="terminal-line">&gt; accessing personal data... [OK]</div>
+    <div class="terminal-line">&gt; ACCESS GRANTED ✗</div>
+    <div class="terminal-line">&gt; owned by: MATI<span class="cursor"></span></div>
+  </div>
+</div>
+
+<div class="hud-bottom">
+  <span>IP: 192.168.<span id="ip">---</span></span>
+  <span>ENCRYPTED</span>
+  <span>v4.2.0</span>
+</div>
+
+<script>
+  // Matrix rain
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF@#$%&*+=<>?!'.split('');
+  const fontSize = 16;
+  let columns = Math.floor(canvas.width / fontSize);
+  let drops = Array(columns).fill(1);
+
+  window.addEventListener('resize', () => {
+    columns = Math.floor(canvas.width / fontSize);
+    drops = Array(columns).fill(1);
+  });
+
+  function draw() {
+    // Trail effect
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = fontSize + "px 'Courier New', monospace";
+
+    for (let i = 0; i < drops.length; i++) {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      const x = i * fontSize;
+      const y = drops[i] * fontSize;
+
+      // Leading character is brighter
+      if (Math.random() > 0.975) {
+        ctx.fillStyle = '#fff';
+      } else {
+        ctx.fillStyle = '#00ff41';
+      }
+
+      ctx.fillText(char, x, y);
+
+      if (y > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  setInterval(draw, 50);
+
+  // Live clock
+  function updateTime() {
+    const d = new Date();
+    const t = d.toTimeString().slice(0, 8);
+    document.getElementById('time').textContent = t;
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  // Fake IP
+  document.getElementById('ip').textContent =
+    Math.floor(Math.random() * 255) + '.' + Math.floor(Math.random() * 255);
+
+  // Vibration on mobile (if supported)
+  if (navigator.vibrate) {
+    setTimeout(() => navigator.vibrate([200, 100, 200, 100, 400]), 500);
+  }
+</script>
+
+</body>
+</html>
